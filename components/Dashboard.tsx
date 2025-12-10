@@ -35,8 +35,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ reports, onReset }) => {
     setSendingReport(true);
     const settings = storageService.getSettings();
 
-    if (!settings.zapierWebhookUrl && !settings.makeWebhookUrl) {
-      alert('נא להגדיר כתובת Zapier או Make בהגדרות');
+    if (!settings.makeWebhookUrl) {
+      alert('נא להגדיר כתובת Make בהגדרות');
       setSendingReport(false);
       return;
     }
@@ -49,7 +49,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ reports, onReset }) => {
         total_sales: stats.closedTotal,
         failed_total: stats.failedTotal,
         conversion_rate: `${stats.closedRate}%`,
-        top_rejection_reason: stats.mainDifficulty, // This is the "Most frequent reason"
+        top_rejection_reason: stats.mainDifficulty,
         count_no_credit: stats.rejectionCounts.no_credit,
         count_no_money: stats.rejectionCounts.no_money,
         count_not_interested: stats.rejectionCounts.not_interested,
@@ -58,7 +58,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ reports, onReset }) => {
 
     try {
         await sendToIntegrations({
-            zapierUrl: settings.zapierWebhookUrl,
             makeUrl: settings.makeWebhookUrl
         }, dailySummary);
         

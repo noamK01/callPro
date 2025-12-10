@@ -49,10 +49,10 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSave }) => {
     try {
       storageService.saveReport(newReport);
       
-      if (settings.zapierWebhookUrl || settings.makeWebhookUrl) {
+      if (settings.makeWebhookUrl) {
         const { id, ...reportData } = newReport;
         await sendToIntegrations(
-            { zapierUrl: settings.zapierWebhookUrl, makeUrl: settings.makeWebhookUrl },
+            { makeUrl: settings.makeWebhookUrl },
             { type: 'single_call', ...reportData }
         );
       }

@@ -9,7 +9,6 @@ export interface CallReport {
 }
 
 export interface AppSettings {
-  zapierWebhookUrl: string;
   makeWebhookUrl: string;
   agentName: string;
   dailyReportTime: string; // Format "HH:MM"

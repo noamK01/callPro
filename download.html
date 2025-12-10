@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download CallAgent V5.0 (Make + Zapier)</title>
+    <title>Download CallAgent V5.1 (Make Only)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #f0f9ff; margin: 0; }
@@ -15,11 +15,11 @@
     </style>
 </head>
 <body>
-    <h1>CallAgent Pro - גרסה V5.0</h1>
-    <div class="tag">Make.com + Zapier Integration</div>
-    <p>1. תמיכה כפולה: שליחה ל-Make ו-Zapier במקביל.</p>
-    <p>2. JSON שטוח ומותאם לשתי הפלטפורמות.</p>
-    <p>3. מסך הגדרות מעודכן עם אפשרויות לניהול ה-Webhooks.</p>
+    <h1>CallAgent Pro - גרסה V5.1</h1>
+    <div class="tag">Make.com Integration Only</div>
+    <p>1. הוסרה התמיכה ב-Zapier לבקשתך.</p>
+    <p>2. תמיכה מלאה ב-Make (לשעבר Integromat).</p>
+    <p>3. JSON שטוח ומותאם.</p>
     <button onclick="downloadZip()">📥 הורד פרויקט (ZIP)</button>
 
     <script>
@@ -30,7 +30,7 @@
             zip.file("package.json", `{
   "name": "call-agent-pro",
   "private": true,
-  "version": "5.0.0",
+  "version": "5.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -100,7 +100,7 @@ export default defineConfig({
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://lucide.dev/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CallAgent Pro V5</title>
+    <title>CallAgent Pro V5.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -179,7 +179,6 @@ export interface CallReport {
 }
 
 export interface AppSettings {
-  zapierWebhookUrl: string;
   makeWebhookUrl: string;
   agentName: string;
   dailyReportTime: string; // Format "HH:MM"
@@ -242,7 +241,7 @@ function App() {
 
   const checkAndSendDailyReport = async () => {
     const settings = storageService.getSettings();
-    if ((!settings.zapierWebhookUrl && !settings.makeWebhookUrl) || !settings.dailyReportTime) return;
+    if (!settings.makeWebhookUrl || !settings.dailyReportTime) return;
 
     const now = new Date();
     const currentTime = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
@@ -272,7 +271,6 @@ function App() {
            };
 
            await sendToIntegrations({
-             zapierUrl: settings.zapierWebhookUrl,
              makeUrl: settings.makeWebhookUrl
            }, dailySummary);
 
@@ -301,7 +299,7 @@ function App() {
         </div>
         <div>
           <h1 className="text-lg font-bold text-white tracking-wide">CallAgent</h1>
-          <p className="text-xs text-slate-400 font-medium">v5.0 (Make+Zapier)</p>
+          <p className="text-xs text-slate-400 font-medium">v5.1 (Make Only)</p>
         </div>
       </div>
       <nav className="space-y-2 px-2">
@@ -383,7 +381,7 @@ function App() {
               <p className="text-slate-500 mt-1 text-lg">
                 {currentView === 'report' && 'מלא את פרטי השיחה האחרונה'}
                 {currentView === 'stats' && 'סקירה כללית של הביצועים'}
-                {currentView === 'settings' && 'הגדרות מערכת (Make & Zapier)'}
+                {currentView === 'settings' && 'הגדרות מערכת (Make.com)'}
               </p>
             </div>
             <div className="hidden md:flex items-center bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 text-slate-600 text-sm font-medium">
@@ -492,10 +490,10 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onSave }) => {
     try {
       storageService.saveReport(newReport);
       
-      if (settings.zapierWebhookUrl || settings.makeWebhookUrl) {
+      if (settings.makeWebhookUrl) {
         const { id, ...reportData } = newReport;
         await sendToIntegrations(
-            { zapierUrl: settings.zapierWebhookUrl, makeUrl: settings.makeWebhookUrl },
+            { makeUrl: settings.makeWebhookUrl },
             { type: 'single_call', ...reportData }
         );
       }
@@ -668,8 +666,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ reports, onReset }) => {
     setSendingReport(true);
     const settings = storageService.getSettings();
 
-    if (!settings.zapierWebhookUrl && !settings.makeWebhookUrl) {
-      alert('נא להגדיר כתובת Zapier או Make בהגדרות');
+    if (!settings.makeWebhookUrl) {
+      alert('נא להגדיר כתובת Make בהגדרות');
       setSendingReport(false);
       return;
     }
@@ -691,7 +689,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ reports, onReset }) => {
 
     try {
         await sendToIntegrations({
-            zapierUrl: settings.zapierWebhookUrl,
             makeUrl: settings.makeWebhookUrl
         }, dailySummary);
         
@@ -869,10 +866,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ reports, onReset }) => {
 import { Card } from './ui/Card';
 import { storageService } from '../services/storageService';
 import { sendToIntegrations } from '../services/integrationService';
-import { Save, Webhook, User, Clock, Activity, CheckCircle, AlertCircle } from 'lucide-react';
+import { Save, Webhook, User, Clock, Activity, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
-  const [zapierUrl, setZapierUrl] = useState('');
   const [makeUrl, setMakeUrl] = useState('');
   const [agentName, setAgentName] = useState('');
   const [dailyReportTime, setDailyReportTime] = useState('17:00');
@@ -882,7 +878,6 @@ export const Settings: React.FC = () => {
 
   useEffect(() => {
     const settings = storageService.getSettings();
-    if (settings.zapierWebhookUrl) setZapierUrl(settings.zapierWebhookUrl);
     if (settings.makeWebhookUrl) setMakeUrl(settings.makeWebhookUrl);
     if (settings.agentName) setAgentName(settings.agentName);
     if (settings.dailyReportTime) setDailyReportTime(settings.dailyReportTime);
@@ -891,7 +886,6 @@ export const Settings: React.FC = () => {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     storageService.saveSettings({ 
-      zapierWebhookUrl: zapierUrl,
       makeWebhookUrl: makeUrl,
       agentName: agentName,
       dailyReportTime: dailyReportTime
@@ -901,11 +895,11 @@ export const Settings: React.FC = () => {
   };
 
   const handleTestConnection = async () => {
-    if (!zapierUrl && !makeUrl) return;
+    if (!makeUrl) return;
     setTesting(true);
     setTestStatus('idle');
     try {
-        await sendToIntegrations({ zapierUrl, makeUrl }, {
+        await sendToIntegrations({ makeUrl }, {
             type: 'test_connection',
             message: 'בדיקת תקשורת מוצלחת מהמערכת - CallAgent Pro',
             agent_name: agentName || 'נציג בדיקה', 
@@ -926,6 +920,13 @@ export const Settings: React.FC = () => {
         setTestStatus('error');
     } finally {
         setTesting(false);
+    }
+  };
+
+  const handleFactoryReset = () => {
+    if (window.confirm('אזהרה חמורה! פעולה זו תמחק את כל הנתונים, ההגדרות והקישורים ל-Make. האפליקציה תחזור למצב התחלתי. האם להמשיך?')) {
+      storageService.clearAll();
+      window.location.reload();
     }
   };
 
@@ -971,22 +972,8 @@ export const Settings: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center">
-                  <Webhook className="w-4 h-4 ml-2 text-orange-500" />
-                  כתובת Webhook של Zapier
-                </label>
-                <input
-                  type="url"
-                  value={zapierUrl}
-                  onChange={(e) => setZapierUrl(e.target.value)}
-                  placeholder="https://hooks.zapier.com/..."
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none dir-ltr text-left"
-                  dir="ltr"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center">
                   <Webhook className="w-4 h-4 ml-2 text-purple-600" />
-                  כתובת Webhook של Make.com (Integromat)
+                  כתובת Webhook של Make.com
                 </label>
                 <input
                   type="url"
@@ -1005,7 +992,7 @@ export const Settings: React.FC = () => {
                     <button
                         type="button"
                         onClick={handleTestConnection}
-                        disabled={(!zapierUrl && !makeUrl) || testing}
+                        disabled={!makeUrl || testing}
                         className="text-xs px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center"
                     >
                         {testing ? <Activity className="w-3 h-3 animate-spin"/> : 'בדוק חיבור'}
@@ -1024,6 +1011,23 @@ export const Settings: React.FC = () => {
             </button>
           </div>
         </form>
+
+        <div className="mt-12 border-t border-rose-100 pt-8">
+            <h3 className="text-sm font-bold text-rose-500 uppercase tracking-wider mb-4">אזור סכנה</h3>
+            <div className="bg-rose-50 rounded-xl p-4 border border-rose-100 flex items-center justify-between">
+                <div>
+                    <h4 className="font-bold text-rose-700">איפוס מלא (הגדרות יצרן)</h4>
+                    <p className="text-xs text-rose-600 mt-1">מוחק את כל הנתונים, ההגדרות והחיבורים.</p>
+                </div>
+                <button 
+                    onClick={handleFactoryReset}
+                    className="px-4 py-2 bg-white border border-rose-200 text-rose-600 hover:bg-rose-100 rounded-lg font-bold text-sm transition-colors flex items-center"
+                >
+                    <Trash2 className="w-4 h-4 ml-2"/>
+                    אפס הכל
+                </button>
+            </div>
+        </div>
       </Card>
     </div>
   );
@@ -1063,13 +1067,12 @@ export const storageService = {
       const data = localStorage.getItem(SETTINGS_KEY);
       const parsed = data ? JSON.parse(data) : {};
       return {
-        zapierWebhookUrl: parsed.zapierWebhookUrl || '',
         makeWebhookUrl: parsed.makeWebhookUrl || '',
         agentName: parsed.agentName || '',
         dailyReportTime: parsed.dailyReportTime || '17:00'
       };
     } catch (e) {
-      return { zapierWebhookUrl: '', makeWebhookUrl: '', agentName: '', dailyReportTime: '17:00' };
+      return { makeWebhookUrl: '', agentName: '', dailyReportTime: '17:00' };
     }
   },
 
@@ -1083,35 +1086,28 @@ export const storageService = {
 
   setLastDailyReportDate: (dateStr: string): void => {
     localStorage.setItem(LAST_REPORT_DATE_KEY, dateStr);
+  },
+
+  clearAll: (): void => {
+    localStorage.removeItem(REPORTS_KEY);
+    localStorage.removeItem(SETTINGS_KEY);
+    localStorage.removeItem(LAST_REPORT_DATE_KEY);
   }
 };`);
 
-            // NEW: Integration Service (Replaces zapierService)
             services.file("integrationService.ts", `
-export const sendToIntegrations = async (urls: { zapierUrl?: string; makeUrl?: string }, data: Record<string, any>) => {
-  const promises = [];
-
-  if (urls.zapierUrl) {
-    promises.push(
-      fetch(urls.zapierUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      }).catch(err => console.error("Zapier Error:", err))
-    );
-  }
-
+export const sendToIntegrations = async (urls: { makeUrl?: string }, data: Record<string, any>) => {
   if (urls.makeUrl) {
-    promises.push(
-      fetch(urls.makeUrl, {
+    try {
+      await fetch(urls.makeUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      }).catch(err => console.error("Make Error:", err))
-    );
+      });
+    } catch (err) {
+      console.error("Make Error:", err);
+    }
   }
-
-  await Promise.all(promises);
 };`);
 
             services.file("statsService.ts", `import { CallReport, DailyStats, REJECTION_LABELS, RejectionReason } from '../types';
@@ -1171,7 +1167,7 @@ export const calculateDailyStats = (reports: CallReport[]): DailyStats | null =>
             const content = await zip.generateAsync({type:"blob"});
             const link = document.createElement("a");
             link.href = URL.createObjectURL(content);
-            link.download = "call-agent-pro-v5.0.zip";
+            link.download = "call-agent-pro-v5.1.zip";
             link.click();
         }
     </script>

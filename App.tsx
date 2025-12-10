@@ -30,7 +30,7 @@ function App() {
 
   const checkAndSendDailyReport = async () => {
     const settings = storageService.getSettings();
-    if ((!settings.zapierWebhookUrl && !settings.makeWebhookUrl) || !settings.dailyReportTime) return;
+    if (!settings.makeWebhookUrl || !settings.dailyReportTime) return;
 
     const now = new Date();
     const currentTime = now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
@@ -43,7 +43,7 @@ function App() {
        
        if (stats && stats.total > 0) {
          try {
-           // Flattened structure for Zapier/Google Sheets
+           // Flattened structure for Google Sheets
            const dailySummary = {
              type: 'daily_summary',
              agent_name: settings.agentName || 'לא הוגדר',
@@ -61,7 +61,6 @@ function App() {
            };
 
            await sendToIntegrations({
-             zapierUrl: settings.zapierWebhookUrl,
              makeUrl: settings.makeWebhookUrl
            }, dailySummary);
 
@@ -90,7 +89,7 @@ function App() {
         </div>
         <div>
           <h1 className="text-lg font-bold text-white tracking-wide">CallAgent</h1>
-          <p className="text-xs text-slate-400 font-medium">v5.0 (Make+Zapier)</p>
+          <p className="text-xs text-slate-400 font-medium">v5.1 (Make Only)</p>
         </div>
       </div>
       <nav className="space-y-2 px-2">
@@ -172,7 +171,7 @@ function App() {
               <p className="text-slate-500 mt-1 text-lg">
                 {currentView === 'report' && 'מלא את פרטי השיחה האחרונה'}
                 {currentView === 'stats' && 'סקירה כללית של הביצועים'}
-                {currentView === 'settings' && 'הגדרות מערכת (Make & Zapier)'}
+                {currentView === 'settings' && 'הגדרות מערכת (Make.com)'}
               </p>
             </div>
             <div className="hidden md:flex items-center bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 text-slate-600 text-sm font-medium">

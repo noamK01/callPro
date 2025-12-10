@@ -31,13 +31,12 @@ export const storageService = {
       const data = localStorage.getItem(SETTINGS_KEY);
       const parsed = data ? JSON.parse(data) : {};
       return {
-        zapierWebhookUrl: parsed.zapierWebhookUrl || '',
         makeWebhookUrl: parsed.makeWebhookUrl || '',
         agentName: parsed.agentName || '',
         dailyReportTime: parsed.dailyReportTime || '17:00'
       };
     } catch (e) {
-      return { zapierWebhookUrl: '', makeWebhookUrl: '', agentName: '', dailyReportTime: '17:00' };
+      return { makeWebhookUrl: '', agentName: '', dailyReportTime: '17:00' };
     }
   },
 
@@ -51,5 +50,11 @@ export const storageService = {
 
   setLastDailyReportDate: (dateStr: string): void => {
     localStorage.setItem(LAST_REPORT_DATE_KEY, dateStr);
+  },
+
+  clearAll: (): void => {
+    localStorage.removeItem(REPORTS_KEY);
+    localStorage.removeItem(SETTINGS_KEY);
+    localStorage.removeItem(LAST_REPORT_DATE_KEY);
   }
 };
